@@ -1,7 +1,7 @@
-# My Vagrant configuration for [Kelsey Hightower's tutorial "Kubernetes The Hard Way"](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+### My Vagrant configuration for [Kelsey Hightower's tutorial "Kubernetes The Hard Way"](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 
-** Work in progress**
+**Work in progress**
 
-This vagrant configuration will set-up a Kubernete cluster following Kelsey Hightower's instruction.
+This vagrant configuration will set-up a Kubernete cluster following Kelsey Hightower's instructions.
 
 Place yourself in this directory and run `vagrant up`
