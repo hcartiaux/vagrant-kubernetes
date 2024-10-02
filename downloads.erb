@@ -1,0 +1,11 @@
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kubectl
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kube-apiserver
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kube-controller-manager
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kube-scheduler
+https://github.com/kubernetes-sigs/cri-tools/releases/download/v<%= params['versions']['crictl'] %>/crictl-v<%= params['versions']['crictl'] %>-linux-<%= params['arch'] %>.tar.gz
+https://github.com/opencontainers/runc/releases/download/v<%= params['versions']['runc'] %>/runc.<%= params['arch'] %>
+https://github.com/containernetworking/plugins/releases/download/v<%= params['versions']['cni'] %>/cni-plugins-linux-<%= params['arch'] %>-v<%= params['versions']['cni'] %>.tgz
+https://github.com/containerd/containerd/releases/download/v<%= params['versions']['containerd'] %>/containerd-<%= params['versions']['containerd'] %>-linux-<%= params['arch'] %>.tar.gz
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kube-proxy
+https://storage.googleapis.com/kubernetes-release/release/v<%= params['versions']['kubernetes'] %>/bin/linux/<%= params['arch'] %>/kubelet
+https://github.com/etcd-io/etcd/releases/download/v<%= params['versions']['etcd'] %>/etcd-v<%= params['versions']['etcd'] %>-linux-<%= params['arch'] %>.tar.gz
