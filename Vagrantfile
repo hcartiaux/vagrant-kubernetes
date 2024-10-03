@@ -25,8 +25,9 @@ Vagrant.configure("2") do |config|
 
       jumpbox.vm.provision "shell", inline: <<-SHELL
           apt-get update -y
-          apt-get upgrade -y
+          apt-get --with-new-pkgs upgrade -y
           apt-get -y install wget curl vim openssl git
+          uname -mov
       SHELL
 
       jumpbox.vm.provision 'shell', reboot: true
@@ -66,7 +67,7 @@ Vagrant.configure("2") do |config|
 
       server.vm.provision "shell", inline: <<-SHELL
           apt-get update -y
-          apt-get upgrade -y
+          apt-get --with-new-pkgs upgrade -y
           uname -mov
       SHELL
 
@@ -91,7 +92,7 @@ Vagrant.configure("2") do |config|
 
           node.vm.provision "shell", inline: <<-SHELL
               apt-get update -y
-              apt-get upgrade -y
+              apt-get --with-new-pkgs upgrade -y
               uname -mov
           SHELL
 
