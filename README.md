@@ -2,6 +2,6 @@
 
 **Work in progress**
 
-This vagrant configuration will set-up a Kubernete cluster following Kelsey Hightower's instructions.
+This vagrant configuration will set-up a Kubernetes cluster following Kelsey Hightower's instructions.
 
 Place yourself in this directory and run `vagrant up`
