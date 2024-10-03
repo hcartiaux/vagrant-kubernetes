@@ -1,6 +1,5 @@
 ---
 arch: amd64
-nodes_number: 2
 versions:
   kubernetes: 1.28.3
   containerd: 1.7.8
@@ -8,3 +7,23 @@ versions:
   etcd: 3.4.27
   runc: 1.1.9
   crictl: 1.28.0
+domain: kubernetes.local
+jumpbox:
+  hostname: jumpbox
+  ip: 192.168.56.10
+  memory: 512
+server:
+  hostname: server
+  ip: 192.168.56.20
+  memory: 2048
+nodes:
+  node0:
+    hostname: node-0
+    ip: 192.168.56.100
+    memory: 2048
+    subnet: 10.200.0.0/24
+  node1:
+    hostname: node-1
+    ip: 192.168.56.101
+    memory: 2048
+    subnet: 10.200.1.0/24
