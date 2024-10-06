@@ -47,10 +47,10 @@ Vagrant.configure("2") do |config|
             https://github.com/kelseyhightower/kubernetes-the-hard-way.git
           cd /root/kubernetes-the-hard-way
 
-          mkdir downloads
+          mkdir -p downloads
           echo "#{template.result(binding)}" > downloads.txt
-          wget -q --https-only \
-            -P downloads       \
+          wget -q --https-only -c \
+            -P downloads          \
             -i downloads.txt
           ls -loh downloads
 
