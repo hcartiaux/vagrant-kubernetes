@@ -27,7 +27,8 @@ Vagrant.configure("2") do |config|
 
       jumpbox.vm.network "private_network", ip: j['ip'], hostname: true
 
-      template = ERB.new File.read("#{current_dir}/downloads.erb")
+      template_machines  = ERB.new(File.read("#{current_dir}/machines.erb"),  nil, '-')
+      template_downloads = ERB.new(File.read("#{current_dir}/downloads.erb"), nil, '-')
 
       jumpbox.vm.provision "shell", inline: <<-SHELL
           apt-get update -y
@@ -42,13 +43,14 @@ Vagrant.configure("2") do |config|
           uname -mov
 
           cd /root
+          echo "#{template_machines.result(binding)}"  > machines.txt
 
           git clone --depth 1 \
             https://github.com/kelseyhightower/kubernetes-the-hard-way.git
           cd /root/kubernetes-the-hard-way
 
           mkdir -p downloads
-          echo "#{template.result(binding)}" > downloads.txt
+          echo "#{template_downloads.result(binding)}" > downloads.txt
           wget -q --https-only -c \
             -P downloads          \
             -i downloads.txt

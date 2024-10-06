@@ -1,0 +1,4 @@
+<%= s['ip'] %> <%= s['hostname'] %>.<%= domain %> <%= s['hostname'] -%>
+<% n.each do |key, worker| %>
+<%= worker['ip'] %> <%= worker['hostname'] %>.<%= domain %> <%= worker['hostname'] %> <%= worker['subnet'] -%>
+<% end -%>
