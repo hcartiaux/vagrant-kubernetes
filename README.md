@@ -5,3 +5,12 @@ This vagrant configuration will set-up a Kubernetes cluster following Kelsey Hig
 Place yourself in this directory and run `vagrant up`.
 
 You can now jump to [Section 12](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/12-smoke-test.md) and manipulate the Kubernetes cluster.
+
+```
+# vagrant ssh jumpbox
+# sudo su -
+# kubectl get nodes
+NAME     STATUS   ROLES    AGE   VERSION
+node-0   Ready    <none>   35m   v1.28.3
+node-1   Ready    <none>   35m   v1.28.3
+```
