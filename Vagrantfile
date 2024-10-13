@@ -160,8 +160,8 @@ Vagrant.configure("2") do |config|
           {
             openssl genrsa -out ca.key 4096
             openssl req -x509 -new -sha512 -noenc \
-              -key ca.key -days 3653 \
-              -config ca.conf \
+              -key ca.key -days 3653              \
+              -config ca.conf                     \
               -out ca.crt
           }
           certs=(
@@ -175,14 +175,14 @@ Vagrant.configure("2") do |config|
             openssl genrsa -out "${i}.key" 4096
 
             openssl req -new -key "${i}.key" -sha256 \
-              -config "ca.conf" -section ${i} \
+              -config "ca.conf" -section ${i}        \
               -out "${i}.csr"
 
             openssl x509 -req -days 3653 -in "${i}.csr" \
-              -copy_extensions copyall \
-              -sha256 -CA "ca.crt" \
-              -CAkey "ca.key" \
-              -CAcreateserial \
+              -copy_extensions copyall                  \
+              -sha256 -CA "ca.crt"                      \
+              -CAkey "ca.key"                           \
+              -CAcreateserial                           \
               -out "${i}.crt"
           done
           ls -1 *.crt *.key *.csr
@@ -453,16 +453,16 @@ EOF
 
           {
             kubectl config set-cluster kubernetes-the-hard-way \
-              --certificate-authority=ca.crt \
-              --embed-certs=true \
+              --certificate-authority=ca.crt                   \
+              --embed-certs=true                               \
               --server=https://server.kubernetes.local:6443
 
             kubectl config set-credentials admin \
-              --client-certificate=admin.crt \
+              --client-certificate=admin.crt     \
               --client-key=admin.key
 
             kubectl config set-context kubernetes-the-hard-way \
-              --cluster=kubernetes-the-hard-way \
+              --cluster=kubernetes-the-hard-way                \
               --user=admin
 
             kubectl config use-context kubernetes-the-hard-way
