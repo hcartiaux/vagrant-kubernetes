@@ -365,6 +365,18 @@ EOF
             > encryption-config.yaml
           scp encryption-config.yaml root@server:~/
       SHELL
+
+      # 7. Bootstrapping the etcd Cluster
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/kubernetes-the-hard-way
+
+          scp \
+            downloads/etcd-*.tar.gz \
+            units/etcd.service \
+            root@server:~/
+
+          ssh root@server /vagrant/scripts/7_etcd_server.sh
+      SHELL
   end
 
 end
