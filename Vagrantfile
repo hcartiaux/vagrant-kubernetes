@@ -99,6 +99,7 @@ Vagrant.configure("2") do |config|
           git clone --depth 1 \
             https://github.com/kelseyhightower/kubernetes-the-hard-way.git
           cd /root/kubernetes-the-hard-way
+          git checkout a9cb5f7ba50b3ed496a18a09c273941f80c6375a
 
           mkdir -p downloads
           echo "#{template_downloads.result(binding)}" > downloads.txt
