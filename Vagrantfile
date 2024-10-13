@@ -473,6 +473,22 @@ EOF
           kubectl get nodes
       SHELL
 
+      # 11. Provisioning Pod Network Routes
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/
+
+          awk '{if ($3 ~ /node-[0-9]*/) { print "ip route add "$4" via "$1 } }' \
+            machines.txt | xargs -i ssh root@server {}
+          ssh root@server ip route
+
+          for host in #{nodes_list.join(' ')}; do
+            grep -v $host machines.txt | awk                                    \
+              '{if ($3 ~ /node-[0-9]*/) { print "ip route add "$4" via "$1 } }' \
+              | xargs -i ssh root@$host {}
+            ssh root@$host ip route
+          done
+      SHELL
+
   end
 
 end
