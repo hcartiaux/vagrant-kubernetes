@@ -8,6 +8,7 @@ require 'erb'
 current_dir = File.dirname(File.expand_path(__FILE__))
 params      = YAML.load_file("#{current_dir}/config.yaml")
 
+arch        = params['arch']
 domain      = params['domain']
 j           = params['jumpbox']
 s           = params['server']
@@ -397,6 +398,51 @@ EOF
           ssh root@server /vagrant/scripts/8_bootstrapping_kubernetes_controllers.sh
 
           curl -k --cacert ca.crt https://server.kubernetes.local:6443/version
+      SHELL
+
+      # 9. Bootstrapping the Kubernetes Worker Nodes
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/kubernetes-the-hard-way
+
+          for host in #{nodes_list.join(' ')}; do
+            SUBNET=$(grep $host /root/machines.txt | cut -d " " -f 4)
+            sed "s|SUBNET|$SUBNET|g" \
+              configs/10-bridge.conf > 10-bridge.conf
+
+            sed "s|SUBNET|$SUBNET|g" \
+              configs/kubelet-config.yaml > kubelet-config.yaml
+
+            scp 10-bridge.conf kubelet-config.yaml \
+            root@$host:~/
+          done
+
+          for host in #{nodes_list.join(' ')}; do
+            scp                                               \
+                downloads/runc.#{arch}                        \
+                downloads/crictl-*-linux-#{arch}.tar.gz       \
+                downloads/cni-plugins-linux-#{arch}-*.tgz     \
+                downloads/containerd-*-linux-#{arch}.tar.gz   \
+                downloads/kubectl                             \
+                downloads/kubelet                             \
+                downloads/kube-proxy                          \
+                configs/99-loopback.conf                      \
+                configs/containerd-config.toml                \
+                configs/kubelet-config.yaml                   \
+                configs/kube-proxy-config.yaml                \
+                units/containerd.service                      \
+                units/kubelet.service                         \
+                units/kube-proxy.service                      \
+                root@$host:~/
+          done
+
+          for host in #{nodes_list.join(' ')}; do
+            ssh root@$host /vagrant/scripts/9_bootstrapping_kubernetes_workers.sh
+          done
+
+          ssh root@server      \
+            "kubectl get nodes \
+            --kubeconfig admin.kubeconfig"
+
       SHELL
   end
 
