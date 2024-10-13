@@ -394,7 +394,7 @@ EOF
             configs/kube-apiserver-to-kubelet.yaml \
             root@server:~/
 
-          ssh root@server /vagrant/scripts/8_bootstrapping_kubernetes-controllers.sh
+          ssh root@server /vagrant/scripts/8_bootstrapping_kubernetes_controllers.sh
 
           curl -k --cacert ca.crt https://server.kubernetes.local:6443/version
       SHELL
