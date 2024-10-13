@@ -341,6 +341,30 @@ Vagrant.configure("2") do |config|
             kube-scheduler.kubeconfig          \
             root@server:~/
       SHELL
+
+      # 6. Generating the Data Encryption Config and Key
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/kubernetes-the-hard-way
+
+          cat > configs/encryption-config.yaml <<EOF
+kind: EncryptionConfig
+apiVersion: v1
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: \\${ENCRYPTION_KEY}
+      - identity: {}
+EOF
+
+          export ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
+          envsubst < configs/encryption-config.yaml \
+            > encryption-config.yaml
+          scp encryption-config.yaml root@server:~/
+      SHELL
   end
 
 end
