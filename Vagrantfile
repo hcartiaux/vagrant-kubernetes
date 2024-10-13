@@ -12,14 +12,17 @@ domain      = params['domain']
 j           = params['jumpbox']
 s           = params['server']
 n           = params['nodes']
+nodes_list  = params['nodes'].map { |_, node| node['hostname'] }
 
 Vagrant.configure("2") do |config|
 
+  # Pre-requisite - generate a set of ssh keys locally
   config.trigger.before [:up, :provision] do |trigger|
     trigger.info = "Generate SSH keys locally..."
     trigger.run = {inline: "bash -c 'test ! -f \"#{current_dir}/ssh/id_rsa\" && ssh-keygen -P \"\" -f \"#{current_dir}/ssh/id_rsa\" || echo SSH keys already generated '"}
   end
 
+  # Server
   config.vm.define "server" do |server|
       server.vm.box = "debian/bookworm64"
 
@@ -42,6 +45,7 @@ Vagrant.configure("2") do |config|
       server.vm.provision "shell", path: "scripts/3_sshd.sh"
   end
 
+  # Compute nodes
   n.each do |key, worker|
       config.vm.define "#{key}" do |node|
           node.vm.box = "debian/bookworm64"
@@ -147,6 +151,60 @@ Vagrant.configure("2") do |config|
             ssh -n \
               root@${HOST} "cat hosts >> /etc/hosts"
           done < machines.txt
+      SHELL
+
+      # 4. Provisioning a CA and Generating TLS Certificates
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/kubernetes-the-hard-way
+          {
+            openssl genrsa -out ca.key 4096
+            openssl req -x509 -new -sha512 -noenc \
+              -key ca.key -days 3653 \
+              -config ca.conf \
+              -out ca.crt
+          }
+          certs=(
+            "admin" #{nodes_list.map { |hostname| "\"#{hostname}\"" }.join(' ')}
+            "kube-proxy" "kube-scheduler"
+            "kube-controller-manager"
+            "kube-api-server"
+            "service-accounts"
+          )
+          for i in ${certs[*]}; do
+            openssl genrsa -out "${i}.key" 4096
+
+            openssl req -new -key "${i}.key" -sha256 \
+              -config "ca.conf" -section ${i} \
+              -out "${i}.csr"
+
+            openssl x509 -req -days 3653 -in "${i}.csr" \
+              -copy_extensions copyall \
+              -sha256 -CA "ca.crt" \
+              -CAkey "ca.key" \
+              -CAcreateserial \
+              -out "${i}.crt"
+          done
+          ls -1 *.crt *.key *.csr
+
+          for host in #{nodes_list.join(' ')}; do
+            ssh root@$host mkdir /var/lib/kubelet/
+
+            scp ca.crt    \
+              root@$host:/var/lib/kubelet/
+
+            scp $host.crt \
+              root@$host:/var/lib/kubelet/kubelet.crt
+
+            scp $host.key \
+              root@$host:/var/lib/kubelet/kubelet.key
+          done
+
+          scp                                         \
+            ca.key ca.crt                             \
+            kube-api-server.key kube-api-server.crt   \
+            service-accounts.key service-accounts.crt \
+            root@server:~/
+
       SHELL
   end
 
