@@ -370,12 +370,33 @@ EOF
       jumpbox.vm.provision "shell", inline: <<-SHELL
           cd /root/kubernetes-the-hard-way
 
-          scp \
+          scp                       \
             downloads/etcd-*.tar.gz \
-            units/etcd.service \
+            units/etcd.service      \
             root@server:~/
 
           ssh root@server /vagrant/scripts/7_etcd_server.sh
+      SHELL
+
+      # 8. Bootstrapping the Kubernetes Control Plane
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          cd /root/kubernetes-the-hard-way
+
+          scp                                      \
+            downloads/kube-apiserver               \
+            downloads/kube-controller-manager      \
+            downloads/kube-scheduler               \
+            downloads/kubectl                      \
+            units/kube-apiserver.service           \
+            units/kube-controller-manager.service  \
+            units/kube-scheduler.service           \
+            configs/kube-scheduler.yaml            \
+            configs/kube-apiserver-to-kubelet.yaml \
+            root@server:~/
+
+          ssh root@server /vagrant/scripts/8_bootstrapping_kubernetes-controllers.sh
+
+          curl -k --cacert ca.crt https://server.kubernetes.local:6443/version
       SHELL
   end
 
