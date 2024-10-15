@@ -36,6 +36,11 @@ Vagrant.configure("2") do |config|
 
       server.vm.network "private_network", ip: s['ip'], hostname: true
 
+      server.vm.provision "shell", inline: <<-SHELL
+          echo "###############"
+          echo "# Server node #"
+          echo "###############"
+      SHELL
       server.vm.provision "shell", path: "scripts/1_sysupdate.sh"
       server.vm.provision 'shell', reboot: true
       server.vm.provision "shell", inline: <<-SHELL
@@ -46,7 +51,7 @@ Vagrant.configure("2") do |config|
       server.vm.provision "shell", path: "scripts/3_sshd.sh"
   end
 
-  # Compute nodes
+  # Worker nodes
   n.each do |key, worker|
       config.vm.define "#{key}" do |node|
           node.vm.box = "debian/bookworm64"
@@ -60,6 +65,11 @@ Vagrant.configure("2") do |config|
 
           node.vm.network "private_network", ip: worker['ip'], hostname: true
 
+          node.vm.provision "shell", inline: <<-SHELL
+              echo "########"
+              echo "# #{worker['hostname']}"
+              echo "########"
+          SHELL
           node.vm.provision "shell", path: "scripts/1_sysupdate.sh"
           node.vm.provision 'shell', reboot: true
           node.vm.provision "shell", inline: <<-SHELL
@@ -84,15 +94,24 @@ Vagrant.configure("2") do |config|
 
       jumpbox.vm.network "private_network", ip: j['ip'], hostname: true
 
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "#########"
+          echo "# Jumpbox"
+          echo "#########"
+      SHELL
+
       jumpbox.vm.provision "shell", path: "scripts/1_sysupdate.sh"
       jumpbox.vm.provision 'shell', reboot: true
       jumpbox.vm.provision "shell", inline: <<-SHELL
           uname -mov
       SHELL
 
-      # 2. Set Up The Jumpbox
       template_downloads = ERB.new(File.read("#{current_dir}/templates/downloads.erb"), nil, '-')
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "======================="
+          echo "# 2. Set Up The Jumpbox"
+          echo "======================="
+
           apt-get -y install wget curl vim openssl git
 
           cd /root
@@ -114,7 +133,11 @@ Vagrant.configure("2") do |config|
           kubectl version --client
       SHELL
 
-      # 3. Provisioning Compute Resources
+      jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "==================================="
+          echo "# 3. Provisioning Compute Resources"
+          echo "==================================="
+      SHELL
       jumpbox.vm.provision "shell", path: "scripts/3_sshd.sh"
       template_machines  = ERB.new(File.read("#{current_dir}/templates/machines.erb"),  nil, '-')
       jumpbox.vm.provision "shell", inline: <<-SHELL
@@ -155,8 +178,11 @@ Vagrant.configure("2") do |config|
           done < machines.txt
       SHELL
 
-      # 4. Provisioning a CA and Generating TLS Certificates
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "===================================="
+          echo "# 4. Provisioning a CA and TLS certs"
+          echo "===================================="
+
           cd /root/kubernetes-the-hard-way
           {
             openssl genrsa -out ca.key 4096
@@ -208,8 +234,11 @@ Vagrant.configure("2") do |config|
             root@server:~/
       SHELL
 
-      # 5. Generating Kubernetes Configuration Files for Authentication
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "================================================================="
+          echo "# 5. Generating Kubernetes Configuration Files for Authentication"
+          echo "================================================================="
+
           cd /root/kubernetes-the-hard-way
 
           # The kubelet Kubernetes Configuration File
@@ -344,8 +373,11 @@ Vagrant.configure("2") do |config|
             root@server:~/
       SHELL
 
-      # 6. Generating the Data Encryption Config and Key
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "=================================================="
+          echo "# 6. Generating the Data Encryption Config and Key"
+          echo "=================================================="
+
           cd /root/kubernetes-the-hard-way
 
           cat > configs/encryption-config.yaml <<EOF
@@ -368,8 +400,11 @@ EOF
           scp encryption-config.yaml root@server:~/
       SHELL
 
-      # 7. Bootstrapping the etcd Cluster
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "==================================="
+          echo "# 7. Bootstrapping the etcd Cluster"
+          echo "==================================="
+
           cd /root/kubernetes-the-hard-way
 
           scp                       \
@@ -380,8 +415,11 @@ EOF
           ssh root@server /vagrant/scripts/7_etcd_server.sh
       SHELL
 
-      # 8. Bootstrapping the Kubernetes Control Plane
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "==============================================="
+          echo "# 8. Bootstrapping the Kubernetes Control Plane"
+          echo "==============================================="
+
           cd /root/kubernetes-the-hard-way
 
           scp                                      \
@@ -401,8 +439,11 @@ EOF
           curl -k --cacert ca.crt https://server.kubernetes.local:6443/version
       SHELL
 
-      # 9. Bootstrapping the Kubernetes Worker Nodes
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "=============================================="
+          echo "# 9. Bootstrapping the Kubernetes Worker Nodes"
+          echo "=============================================="
+
           cd /root/kubernetes-the-hard-way
 
           for host in #{nodes_list.join(' ')}; do
@@ -445,8 +486,11 @@ EOF
             --kubeconfig admin.kubeconfig"
       SHELL
 
-      # 10. Configuring kubectl for Remote Access
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "==========================================="
+          echo "# 10. Configuring kubectl for Remote Access"
+          echo "==========================================="
+
           cd /root/kubernetes-the-hard-way
 
           curl -k --cacert ca.crt \
@@ -474,8 +518,11 @@ EOF
           kubectl get nodes
       SHELL
 
-      # 11. Provisioning Pod Network Routes
       jumpbox.vm.provision "shell", inline: <<-SHELL
+          echo "================================="
+          echo "# 11. Provisioning Pod Network Routes"
+          echo "================================="
+
           cd /root/
 
           awk '{if ($3 ~ /node-[0-9]*/) { print "ip route add "$4" via "$1 } }' \
@@ -488,6 +535,10 @@ EOF
               | xargs -i ssh root@$host {}
             ssh root@$host ip route
           done
+
+          echo "#########################################"
+          echo "# End of Kubernetes cluster configuration"
+          echo "#########################################"
       SHELL
 
   end

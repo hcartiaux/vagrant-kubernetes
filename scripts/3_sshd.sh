@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "==============================="
+echo "# Setting up SSHD configuration"
+echo "==============================="
+
 sed -i \
   's/^#PermitRootLogin.*/PermitRootLogin yes/' \
   /etc/ssh/sshd_config
